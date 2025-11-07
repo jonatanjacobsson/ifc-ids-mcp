@@ -23,7 +23,7 @@ An MCP (Model Context Protocol) server that enables AI agents to deterministical
 
 ```bash
 # Clone repository
-git clone https://github.com/Quasar-Consulting-Group/ifc-ids-mcp.git
+git clone https://github.com/jonatanjacobsson/ifc-ids-mcp.git
 cd ifc-ids-mcp
 
 # Install dependencies
@@ -378,8 +378,9 @@ MIT License - see [LICENSE](./LICENSE) file for details
 
 ## Support
 
-- **Issues**: https://github.com/Quasar-Consulting-Group/ifc-ids-mcp/issues
-- **Discussions**: https://github.com/Quasar-Consulting-Group/ifc-ids-mcp/discussions
+- **Original Repository**: https://github.com/Quasar-Consulting-Group/ifc-ids-mcp
+- **This Fork**: https://github.com/jonatanjacobsson/ifc-ids-mcp
+- **Issues**: https://github.com/jonatanjacobsson/ifc-ids-mcp/issues
 
 ---
 
