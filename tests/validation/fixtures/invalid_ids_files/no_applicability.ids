@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ids xmlns="http://standards.buildingsmart.org/IDS" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://standards.buildingsmart.org/IDS http://standards.buildingsmart.org/IDS/1.0/ids.xsd">
+    <info>
+        <title>Invalid IDS - No Applicability</title>
+        <description>Specification with no applicability facets - should fail</description>
+    </info>
+    <specifications>
+        <specification name="Invalid Spec" ifcVersion="IFC4">
+            <!-- Missing applicability section - this will fail XSD validation -->
+            <applicability minOccurs="0" maxOccurs="unbounded">
+            </applicability>
+            <requirements>
+                <attribute cardinality="required">
+                    <name>
+                        <simpleValue>Name</simpleValue>
+                    </name>
+                </attribute>
+            </requirements>
+        </specification>
+    </specifications>
+</ids>

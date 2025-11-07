@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "ids-mcp-server": {
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "-m",
+        "ids_mcp_server"
+      ],
+      "env": {
+        "IDS_MCP_LOG_LEVEL": "INFO"
+      }
+    }
+  }
+}
