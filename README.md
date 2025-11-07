@@ -113,7 +113,10 @@ my_ids.to_xml("requirements.ids")
 
 ### Validation
 
-- **validate_ids** - Validate IDS document against XSD schema
+- **validate_ids** - Validate IDS document using dual validation:
+  - **IfcTester**: XSD schema compliance and structure validation
+  - **IDS-Audit-tool**: Official buildingSMART tool for comprehensive IDS validation
+  - Both validators must pass for overall validation to succeed
 - **validate_ifc_model** - Validate IFC model against IDS (bonus feature)
 
 ## Early Validation & Constraint Checking
@@ -338,6 +341,14 @@ See [constitution.md](./constitution.md) for full details.
 - **ifctester** - IDS authoring and validation (from IfcOpenShell)
 - **pydantic** - Data validation
 
+### Validation Tools
+- **IDS-Audit-tool** - Official buildingSMART tool for IDS validation
+  - Source: https://github.com/buildingSMART/IDS-Audit-tool
+  - Release: https://github.com/buildingSMART/IDS-Audit-tool/releases/download/audit-1.0.0/ids-audit-tool.zip
+  - Location: Project repository under `tools/ids-audit-tool/bin/` (zipped contents extracted here)
+  - License: MIT
+  - Automatically integrated for dual validation alongside IfcTester
+
 ### Development
 - **pytest** - Testing framework
 - **pytest-asyncio** - Async test support
@@ -372,6 +383,6 @@ MIT License - see [LICENSE](./LICENSE) file for details
 
 ---
 
-**Status**: ✅ Implementation Complete | 94% Test Coverage | 17 MCP Tools | 168 Tests | Early Validation
+**Status**: ✅ Implementation Complete | 94% Test Coverage | 17 MCP Tools | 168 Tests | Early Validation | Dual Validation (IfcTester + IDS-Audit-tool)
 
 Built with ❤️ using [IfcOpenShell](https://ifcopenshell.org/) and [FastMCP](https://gofastmcp.com/)

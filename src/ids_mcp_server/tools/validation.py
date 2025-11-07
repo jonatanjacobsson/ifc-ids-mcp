@@ -1,5 +1,6 @@
 """Validation MCP tools."""
 
+import tempfile
 from typing import Dict, Any, Optional
 from pathlib import Path
 from fastmcp import Context
@@ -8,36 +9,47 @@ from ifctester import ids, reporter
 import ifcopenshell
 
 from ids_mcp_server.session.manager import get_or_create_session
+from ids_mcp_server.config import load_config_from_env
+from ids_mcp_server.tools.ids_audit_tool import run_audit_tool
 
 
 async def validate_ids(ctx: Context) -> Dict[str, Any]:
     """
     Validate current session's IDS document.
 
-    Validates:
+    Validates using both IfcTester and buildingSMART IDS-Audit-tool:
     1. Required fields present (title, specifications, etc.)
     2. Each specification has applicability
     3. IFC versions are valid
     4. XSD schema compliance (via IfcTester)
+    5. IDS-Audit-tool validation (if enabled)
 
     Args:
         ctx: FastMCP Context (auto-injected)
 
     Returns:
         {
-            "valid": true,
-            "errors": [],
-            "warnings": [],
+            "valid": true,  # Both validators must pass
+            "errors": [],  # Combined from both
+            "warnings": [],  # Combined from both
             "specifications_count": 3,
             "details": {
                 "has_title": true,
                 "has_specifications": true,
-                "xsd_valid": true
+                "xsd_valid": true  # From IfcTester
+            },
+            "audit_tool": {  # New section
+                "valid": true,
+                "exit_code": 0,
+                "output": "...",
+                "errors": [],
+                "warnings": []
             }
         }
     """
     try:
         ids_obj = await get_or_create_session(ctx)
+        config = load_config_from_env()
 
         await ctx.info("Validating IDS document")
 
@@ -91,11 +103,57 @@ async def validate_ids(ctx: Context) -> Dict[str, Any]:
             xsd_valid = False
             errors.append(f"XSD validation failed: {str(e)}")
 
-        valid = len(errors) == 0
+        # Track IfcTester validation result before audit tool
+        ifc_tester_valid = len(errors) == 0 and xsd_valid
+
+        # Run IDS-Audit-tool validation if enabled
+        audit_tool_result = None
+        if config.audit_tool.enabled:
+            try:
+                await ctx.info("Running IDS-Audit-tool validation...")
+                # Export IDS to temporary file for audit tool
+                with tempfile.NamedTemporaryFile(mode='w', suffix='.ids', delete=False) as tmp_file:
+                    tmp_path = tmp_file.name
+                    ids_obj.to_xml(tmp_path)
+
+                try:
+                    # Run audit tool with config
+                    audit_tool_result = run_audit_tool(tmp_path, config.audit_tool)
+
+                    # Merge errors and warnings from audit tool
+                    if audit_tool_result.get("errors"):
+                        errors.extend([f"Audit tool: {e}" for e in audit_tool_result["errors"]])
+                    if audit_tool_result.get("warnings"):
+                        warnings.extend([f"Audit tool: {w}" for w in audit_tool_result["warnings"]])
+
+                finally:
+                    # Clean up temporary file
+                    try:
+                        Path(tmp_path).unlink()
+                    except Exception:
+                        pass  # Ignore cleanup errors
+
+            except Exception as e:
+                await ctx.warning(f"IDS-Audit-tool validation failed: {str(e)}")
+                audit_tool_result = {
+                    "valid": False,
+                    "exit_code": -1,
+                    "output": f"Error running audit tool: {str(e)}",
+                    "errors": [f"Error running audit tool: {str(e)}"],
+                    "warnings": []
+                }
+                # Add to errors list
+                errors.append(f"Audit tool: Error running audit tool: {str(e)}")
+        else:
+            await ctx.info("IDS-Audit-tool validation disabled")
+
+        # Overall validation: both IfcTester and audit tool must pass
+        audit_tool_valid = audit_tool_result is None or audit_tool_result.get("valid", False)
+        valid = ifc_tester_valid and audit_tool_valid
 
         await ctx.info(f"Validation complete: {'PASS' if valid else 'FAIL'}")
 
-        return {
+        result = {
             "valid": valid,
             "errors": errors,
             "warnings": warnings,
@@ -106,6 +164,21 @@ async def validate_ids(ctx: Context) -> Dict[str, Any]:
                 "xsd_valid": xsd_valid
             }
         }
+
+        # Add audit tool results if available
+        if audit_tool_result is not None:
+            result["audit_tool"] = audit_tool_result
+        elif config.audit_tool.enabled:
+            # Tool was enabled but result is None (shouldn't happen, but handle gracefully)
+            result["audit_tool"] = {
+                "valid": False,
+                "exit_code": -1,
+                "output": "Audit tool validation was attempted but no result was returned",
+                "errors": ["Audit tool validation failed"],
+                "warnings": []
+            }
+
+        return result
 
     except Exception as e:
         await ctx.error(f"Validation error: {str(e)}")

@@ -91,6 +91,10 @@ async def test_complete_ids_creation_workflow(mock_context):
     validation_result = await validate_ids(ctx=mock_context)
     assert validation_result["valid"] is True
     assert validation_result["specifications_count"] == 2
+    # Check for audit tool results if enabled
+    if "audit_tool" in validation_result:
+        assert "valid" in validation_result["audit_tool"]
+        assert "exit_code" in validation_result["audit_tool"]
 
     # Step 8: Get IDS info
     info = await get_ids_info(ctx=mock_context)
