@@ -44,7 +44,8 @@ def get_audit_tool_path(config: Optional[AuditToolConfig] = None) -> Optional[Pa
 
     logger.warning(
         f"IDS-Audit-tool not found at {tool_path}\n"
-        f"Run 'python setup_audit_tool.py' to download release binaries from GitHub."
+        f"Expected location: {tool_path}\n"
+        f"Download binaries from: https://github.com/buildingSMART/IDS-Audit-tool/releases/download/audit-1.0.0/ids-audit-tool.zip"
     )
     return None
 
