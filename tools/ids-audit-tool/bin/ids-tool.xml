@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ids-tool</name>
+    </assembly>
+    <members>
+        <member name="T:IdsTool.AuditOptions">
+            <summary>
+            Class has been renamed, use <see cref="T:IdsTool.BatchAuditOptions"/>
+            </summary>
+        </member>
+        <member name="T:IdsTool.BatchAuditOptions">
+            <summary>
+            Concrete class passed to the ids-tool library, when Running the audit.
+            See <see cref="T:IdsLib.IBatchAuditOptions"/> for more details.
+            </summary>
+        </member>
+        <member name="P:IdsTool.BatchAuditOptions.SchemaFiles">
+            <summary>
+            <inheritdoc/>
+            </summary>
+        </member>
+        <member name="P:IdsTool.BatchAuditOptions.AuditSchemaDefinition">
+            <summary>
+            <inheritdoc/>
+            </summary>
+        </member>
+        <member name="P:IdsTool.BatchAuditOptions.InputExtension">
+            <summary>
+            <inheritdoc/>
+            </summary>
+        </member>
+        <member name="P:IdsTool.BatchAuditOptions.InputSource">
+            <summary>
+            <inheritdoc/>
+            </summary>
+        </member>
+        <member name="P:IdsTool.BatchAuditOptions.OmitIdsContentAudit">
+            <summary>
+            <inheritdoc/>
+            </summary>
+        </member>
+        <member name="P:IdsTool.BatchAuditOptions.OmitIdsContentAuditPattern">
+            <summary>
+            <inheritdoc/>
+            </summary>
+        </member>
+        <member name="T:idsTool.Program">
+            <summary>
+            Defines application entry point
+            </summary>
+        </member>
+        <member name="M:idsTool.Program.Main(System.String[])">
+            <summary>
+            Application entry point
+            </summary>
+            <param name="args">optional string of parameters</param>
+            <returns>integer value used for ErrCode</returns>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,1737 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ids-lib</name>
+    </assembly>
+    <members>
+        <member name="T:IdsLib.ActionCollection">
+            <summary>
+            Provides an expressive way to present the collection of actions that the tool is performing
+            </summary>
+        </member>
+        <member name="M:IdsLib.ActionCollection.ToString">
+            <inheritdoc />
+        </member>
+        <member name="M:IdsLib.ActionCollection.ToString(System.String,System.IFormatProvider)">
+            <inheritdoc />
+        </member>
+        <member name="M:IdsLib.ActionCollection.GetActions">
+            <summary>
+            Return the included actions
+            </summary>
+        </member>
+        <member name="T:IdsLib.Action">
+            <summary>
+            Types of controls that the tools performs, resulting from the evaluation of options provided
+            </summary>
+        </member>
+        <member name="F:IdsLib.Action.IdsStructure">
+            <summary>
+            Checks that the structure of the IDS conforms to the schema
+            </summary>
+        </member>
+        <member name="F:IdsLib.Action.XsdCorrectness">
+            <summary>
+            Checks that any schema provided is valid
+            </summary>
+        </member>
+        <member name="F:IdsLib.Action.IdsContent">
+            <summary>
+            Checks the implementation agreement of the IDS content
+            </summary>
+        </member>
+        <member name="F:IdsLib.Action.IdsContentWithOmissions">
+            <summary>
+            Checks the implementation agreement of the IDS content, but skipping some files, due to an exclusion pattern
+            </summary>
+        </member>
+        <member name="T:IdsLib.Audit">
+            <summary>
+            Main static class for invoking the audit functions.
+            
+            If you wish to audit a single file, the best entry point is <see cref="M:IdsLib.Audit.Run(System.IO.Stream,IdsLib.SingleAuditOptions,Microsoft.Extensions.Logging.ILogger)"/>.
+            This method allows you to run audits on the provided stream.
+            
+            For more complex auditing scenarios (e.g. those used by the tool), some automation can be achieved with <see cref="M:IdsLib.Audit.Run(IdsLib.IBatchAuditOptions,Microsoft.Extensions.Logging.ILogger)"/>.
+            
+            Both APIs provide a return value that can be interpreted to determine if errors have been found.
+            
+            For more detailed feedback on the specific location of issues encountered, you must pass an <see cref="T:Microsoft.Extensions.Logging.ILogger"/> interface, and collect events.
+            </summary>
+        </member>
+        <member name="T:IdsLib.Audit.Status">
+            <summary>
+            Summary return status of the audit functions
+            </summary>
+        </member>
+        <member name="F:IdsLib.Audit.Status.Ok">
+            <summary>
+            No errors encountered
+            </summary>
+        </member>
+        <member name="F:IdsLib.Audit.Status.NotImplementedError">
+            <summary>
+            The tool did not complete all the audits, because some aspect of the process are not implemented yet
+            </summary>
+        </member>
+        <member name="F:IdsLib.Audit.Status.InvalidOptionsError">
+            <summary>
+            The options provided in input are incomplete or inconsistent.
+            </summary>
+        </member>
+        <member name="F:IdsLib.Audit.Status.NotFoundError">
+            <summary>
+            A resources passed via file name was not found.
+            </summary>
+        </member>
+        <member name="F:IdsLib.Audit.Status.IdsStructureError">
+            <summary>
+            When auditing an IDS, one or more errors were encountered in the XML structure (includes XSD compliance errors).
+            Depending on the <see cref="P:IdsLib.AuditProcessOptions.XmlWarningAction"/> property, this might include XSD schema warnings.
+            </summary>
+        </member>
+        <member name="F:IdsLib.Audit.Status.IdsContentError">
+            <summary>
+            When auditing an IDS, one or more errors encountered auditing against the implementation agreement.
+            </summary>
+        </member>
+        <member name="F:IdsLib.Audit.Status.XsdSchemaError">
+            <summary>
+            A custom XSD was passed, but it could not be used because of an error in its content or structure.
+            </summary>
+        </member>
+        <member name="F:IdsLib.Audit.Status.UnhandledError">
+            <summary>
+            An unmanaged error occurred in the main audit methods. Please contact the authors to address the problem.
+            </summary>
+        </member>
+        <member name="F:IdsLib.Audit.Status.IdsStructureWarning">
+            <summary>
+            When auditing an IDS, one or more warnings were encountered in the XML structure as defined by the XSD schemas.
+            Triggering this status is configurable using the <see cref="P:IdsLib.AuditProcessOptions.XmlWarningAction"/> property.
+            </summary>
+        </member>
+        <member name="M:IdsLib.Audit.Run(System.IO.Stream,IdsLib.SingleAuditOptions,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Main entry point to access the library features via a stream to read the IDS content.
+            </summary>
+            <param name="idsSource">the stream providing access to the content of the IDS to be audited</param>
+            <param name="options">specifies the behaviour of the audit</param>
+            <param name="logger">the optional logger provides fine-grained feedback on all the audits performed and any issues encountered</param>
+            <returns>A status enum that summarizes the result for all audits on the single stream</returns>
+        </member>
+        <member name="M:IdsLib.Audit.RunAsync(System.IO.Stream,IdsLib.SingleAuditOptions,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Main entry point to access the library features via a stream to read the IDS content.
+            </summary>
+            <param name="idsSource">the stream providing access to the content of the IDS to be audited</param>
+            <param name="options">specifies the behaviour of the audit</param>
+            <param name="logger">the optional logger provides fine-grained feedback on all the audits performed and any issues encountered</param>
+            <returns>A status enum that summarizes the result for all audits on the single stream</returns>
+        </member>
+        <member name="M:IdsLib.Audit.Run(IdsLib.IBatchAuditOptions,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Entry point to access the library features in batch mode either on directories or single files
+            </summary>
+            <param name="batchOptions">configuration options for the execution of audits on a file or folder</param>
+            <param name="logger">the optional logger provides fine-grained feedback on all the audits performed</param>
+            <returns>A status enum that summarizes the result for all audits executed</returns>
+        </member>
+        <member name="M:IdsLib.Audit.PerformSchemaCheck(IdsLib.IBatchAuditOptions,Microsoft.Extensions.Logging.ILogger)">
+            todo: remove, possibly relocate to <see cref="T:IdsLib.SchemaProviders.FileBasedSchemaProvider"/>.
+        </member>
+        <member name="T:IdsLib.Audit.ISchemaProvider">
+            <summary>
+            An interface to allow the specification of schemas to be loaded when reading the IDS xml file.
+            </summary>
+        </member>
+        <member name="M:IdsLib.Audit.ISchemaProvider.GetSchemas(System.IO.Stream,Microsoft.Extensions.Logging.ILogger,System.Collections.Generic.IEnumerable{System.Xml.Schema.XmlSchema}@)">
+            <summary>
+            This method should return the collection of schemas to be loaded.
+            </summary>
+            <param name="source">If available, this is the version of the schema that the application has 
+            determined appropriate for the IDS.</param>
+            <param name="logger">Logger for detailed feedback on any useful information.</param>
+            <param name="schemas">The schemas to be loaded for the schema validation</param>
+            <returns>The status of the function, if no problem encountered, return <see cref="F:IdsLib.Audit.Status.Ok"/>.</returns>
+        </member>
+        <member name="T:IdsLib.IBatchAuditOptions">
+            <summary>
+            This interface contains the parameters to configure a complex execution of the audit in a batch scenario.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IBatchAuditOptions.SchemaFiles">
+            <summary>
+            XSD schema to load, this is useful when testing changes in the schema (e.g. GitHub repo).
+            </summary>
+        </member>
+        <member name="P:IdsLib.IBatchAuditOptions.AuditSchemaDefinition">
+            <summary>
+            Check validity of the xsd schema(s) passed with the <see cref="P:IdsLib.IBatchAuditOptions.SchemaFiles"/> parameter.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IBatchAuditOptions.InputExtension">
+            <summary>
+            This is used to define the extension to load when passing a folder in the <see cref="P:IdsLib.IBatchAuditOptions.InputSource"/> parameter. In doubt set it to "ids".
+            </summary>
+        </member>
+        <member name="P:IdsLib.IBatchAuditOptions.InputSource">
+            <summary>
+            Input IDS to be processed; it can be a file or a folder.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IBatchAuditOptions.OmitIdsContentAudit">
+            <summary>
+            If set to true skips the audit of the semantic aspects of the IDS.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IBatchAuditOptions.OmitIdsContentAuditPattern">
+            <summary>
+            Regex applied to file name to omit the audit of the semantic aspects of the IDS.
+            This can be useful to omit strict audit of files that are known to have content issues 
+            (e.g. failing documentation of the buildingSMART IDS website).
+            </summary>
+        </member>
+        <member name="T:IdsLib.IdsSchema.IdsNodes.IdsFacts">
+            <summary>
+            Collection of relevant IDS assumptions
+            </summary>
+        </member>
+        <member name="F:IdsLib.IdsSchema.IdsNodes.IdsFacts.DefaultIdsVersion">
+            <summary>
+            The version of IDS schema to be assumed when running programmatically
+            </summary>
+        </member>
+        <member name="T:IdsLib.IdsSchema.IdsNodes.IdsVersion">
+            <summary>
+            Enumeration to identify a single IDS version.
+            </summary>
+        </member>
+        <member name="F:IdsLib.IdsSchema.IdsNodes.IdsVersion.Invalid">
+            <summary>
+            Invalid or incomplete version information
+            </summary>
+        </member>
+        <member name="F:IdsLib.IdsSchema.IdsNodes.IdsVersion.Ids0_9">
+            <summary>
+            Version 0.9; this might be removed before first official release
+            </summary>
+        </member>
+        <member name="F:IdsLib.IdsSchema.IdsNodes.IdsVersion.Ids0_9_6">
+            <summary>
+            Version 0.9.6; this might be removed before first official release
+            </summary>
+        </member>
+        <member name="F:IdsLib.IdsSchema.IdsNodes.IdsVersion.Ids0_9_7">
+            <summary>
+            Version 0.9.7; this might be removed before first official release
+            </summary>
+        </member>
+        <member name="F:IdsLib.IdsSchema.IdsNodes.IdsVersion.Ids1_0">
+            <summary>
+            Version 1; this is not final until formal release.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IdsSchema.IdsNodes.IdsAttribute.value">
+            <summary>
+            value is used when evaluating cardinality for requirements
+            </summary>
+        </member>
+        <member name="P:IdsLib.IdsSchema.IdsNodes.IdsAttribute.IsRequired">
+            <inheritdoc />
+        </member>
+        <member name="F:IdsLib.IdsSchema.IdsNodes.IdsAttribute.typeFilters">
+            <summary>
+            prepared typefilters per schema version
+            </summary>
+        </member>
+        <member name="M:IdsLib.IdsSchema.IdsNodes.IdsAttribute.GetTypesFilter(IdsLib.IfcSchema.SchemaInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:IdsLib.IdsSchema.IdsNodes.IdsAttribute.PerformCardinalityAudit(Microsoft.Extensions.Logging.ILogger)">
+            <inheritdoc />
+        </member>
+        <member name="T:IdsLib.IdsSchema.IdsNodes.IdsClassification">
+            <summary>
+            This is used for Classification and Material
+            </summary>
+        </member>
+        <member name="P:IdsLib.IdsSchema.IdsNodes.IdsClassification.value">
+            <summary>
+            value is used when evaluating cardinality for requirements
+            </summary>
+        </member>
+        <member name="P:IdsLib.IdsSchema.IdsNodes.IdsClassification.IsValid">
+            <inheritdoc />
+        </member>
+        <member name="P:IdsLib.IdsSchema.IdsNodes.IdsClassification.IsRequired">
+            <inheritdoc />
+        </member>
+        <member name="M:IdsLib.IdsSchema.IdsNodes.IdsClassification.GetTypesFilter(IdsLib.IfcSchema.SchemaInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:IdsLib.IdsSchema.IdsNodes.IdsClassification.PerformCardinalityAudit(Microsoft.Extensions.Logging.ILogger)">
+            <inheritdoc />
+        </member>
+        <member name="F:IdsLib.IdsSchema.IdsNodes.IdsEntity.typeFilters">
+            <summary>
+            prepared typefilters per schema version
+            </summary>
+        </member>
+        <member name="M:IdsLib.IdsSchema.IdsNodes.IdsEntity.GetTypesFilter(IdsLib.IfcSchema.SchemaInfo)">
+            <inheritdoc />
+        </member>
+        <member name="T:IdsLib.IdsSchema.IdsNodes.IdsFacet">
+            <summary>
+            This is used for Classification and Material
+            </summary>
+        </member>
+        <member name="P:IdsLib.IdsSchema.IdsNodes.IdsFacet.value">
+            <summary>
+            value is used when evaluating cardinality for requirements
+            </summary>
+        </member>
+        <member name="P:IdsLib.IdsSchema.IdsNodes.IdsFacet.IsValid">
+            <inheritdoc />
+        </member>
+        <member name="P:IdsLib.IdsSchema.IdsNodes.IdsFacet.IsRequired">
+            <inheritdoc />
+        </member>
+        <member name="M:IdsLib.IdsSchema.IdsNodes.IdsFacet.GetTypesFilter(IdsLib.IfcSchema.SchemaInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:IdsLib.IdsSchema.IdsNodes.IdsFacet.PerformCardinalityAudit(Microsoft.Extensions.Logging.ILogger)">
+            <inheritdoc />
+        </member>
+        <member name="F:IdsLib.IdsSchema.IdsNodes.IdsPartOf.typeFilters">
+            <summary>
+            prepared typefilters per schema version
+            </summary>
+        </member>
+        <member name="M:IdsLib.IdsSchema.IdsNodes.IdsPartOf.GetTypesFilter(IdsLib.IfcSchema.SchemaInfo)">
+            <inheritdoc />
+        </member>
+        <member name="P:IdsLib.IdsSchema.IdsNodes.IdsProperty.value">
+            <summary>
+            value is used when evaluating cardinality for requirements
+            </summary>
+        </member>
+        <member name="F:IdsLib.IdsSchema.IdsNodes.IdsProperty.typeFilters">
+            <summary>
+            prepared typefilters per schema version
+            </summary>
+        </member>
+        <member name="M:IdsLib.IdsSchema.IdsNodes.IdsProperty.GetTypesFilter(IdsLib.IfcSchema.SchemaInfo)">
+            <inheritdoc />
+        </member>
+        <member name="T:IdsLib.IdsSchema.IdsNodes.IdsInformation">
+            <summary>
+            Status information of an IDS source
+            </summary>
+        </member>
+        <member name="P:IdsLib.IdsSchema.IdsNodes.IdsInformation.IsIds">
+            <summary>
+            Boolean value that determines if the source is considered a valid IDS
+            </summary>
+        </member>
+        <member name="P:IdsLib.IdsSchema.IdsNodes.IdsInformation.SchemaLocation">
+            <summary>
+            The declared schema location of the source
+            </summary>
+        </member>
+        <member name="P:IdsLib.IdsSchema.IdsNodes.IdsInformation.StatusMessage">
+            <summary>
+            A status message associated with the source. Empty if all is good.
+            </summary>
+        </member>
+        <member name="M:IdsLib.IdsSchema.IdsNodes.IdsInformation.GetVersion(Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            The IDS version detected from the source, providing logging feedback.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IdsSchema.IdsNodes.IdsInformation.Version">
+            <summary>
+            The IDS version detected from the source, without any logging feedback.
+            </summary>
+        </member>
+        <member name="T:IdsLib.IdsSchema.IdsNodes.IIdsFacet">
+            <summary>
+            Standard interface to identify facets
+            </summary>
+        </member>
+        <member name="T:IdsLib.IdsSchema.IdsNodes.IIdsCardinalityFacet">
+            <summary>
+            Interface to ensure that facets used as requirements can have more checks run 
+            on them:
+            - min and max occurrence checks
+            </summary>
+        </member>
+        <member name="M:IdsLib.IdsSchema.IdsNodes.IIdsCardinalityFacet.PerformCardinalityAudit(Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Used for facets that have more audits if used as requirements than if used in the applicability
+            </summary>
+        </member>
+        <member name="P:IdsLib.IdsSchema.IdsNodes.IIdsCardinalityFacet.IsRequired">
+            <summary>
+            This will be true for all applicabiliy facets, but will be false for optional and prohibited
+            Logical type constraints are only applied to the ones that are required, excluiding optional and prohibited.
+            </summary>
+        </member>
+        <member name="M:IdsLib.IdsSchema.IdsNodes.IIfcTypeConstraintProvider.GetTypesFilter(IdsLib.IfcSchema.SchemaInfo)">
+            <summary>
+            Collection of the only valid types determined by the facet, 
+            used for auditing of compatibility of multiple facets together.
+            
+            If null it is ignored at auditing time.
+            </summary>
+        </member>
+        <member name="T:IdsLib.IdsSchema.IdsNodes.NodeIdentification">
+            <summary>
+            Provides a way to identify the element of the xml with line/poistion or relative index inside the IDS
+            Instances of this class are passed as a parameter in the <see cref="T:Microsoft.Extensions.Logging.ILogger"/> calls, and by default it presents the location by line and number.
+            
+            A custom implementation of ILogger allows you to cast the received state parameter to IReadOnlyList&lt;KeyValuePair&lt;string, object&gt;&gt; and receive instances of NodeIdentification as parameters, to access the precise identifier.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IdsSchema.IdsNodes.NodeIdentification.PositionalIdentifier">
+            <summary>
+            Provides positional identification of a node within and IDS via its hierarchy.
+            Indices are 1-based to be user friendly. The hierarchy is separated by forward slash char.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IdsSchema.IdsNodes.NodeIdentification.StartLineNumber">
+            <summary>
+            Line number in the xml file
+            </summary>
+        </member>
+        <member name="P:IdsLib.IdsSchema.IdsNodes.NodeIdentification.StartLinePosition">
+            <summary>
+            Line position in the xml file
+            </summary>
+        </member>
+        <member name="P:IdsLib.IdsSchema.IdsNodes.NodeIdentification.NodeType">
+            <summary>
+            The localname of the XML node type
+            </summary>
+        </member>
+        <member name="M:IdsLib.IdsSchema.IdsNodes.NodeIdentification.ToString">
+            <inheritdoc />
+        </member>
+        <member name="M:IdsLib.IdsSchema.IdsNodes.NodeIdentification.ToString(System.String,System.IFormatProvider)">
+            <summary>
+            Formats the value of the current instance using the required format.
+            </summary>
+            <param name="format">the format required</param>
+            <param name="formatProvider">an optional provider</param>
+            <returns>a non null string</returns>
+        </member>
+        <member name="M:IdsLib.IdsSchema.Cardinality.MinMaxCardinality.Audit(System.String@)">
+            <summary>
+            Audits the validity of an occurrence setting.
+            </summary>
+            <param name="errorMessage">if invalid returns an errors string without punctuation.</param>
+            <returns>the evaluated status</returns>
+        </member>
+        <member name="M:IdsLib.IdsSchema.IdsXmlNode.PerformAudit(IdsLib.Audit.AuditStateInformation,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            The Audit method of the base context always succeeds
+            </summary>
+            <param name="stateInfo">The state of the file audit can determine conditional auditing behaviours</param>
+            <param name="logger">unused in the base class</param>
+            <returns><see cref="F:IdsLib.Audit.Status.Ok"/> in all circumstances, only overridden implementation determine failure behaviours</returns>
+        </member>
+        <member name="M:IdsLib.IdsSchema.IdsXmlNode.TryGetUpperNode``1(Microsoft.Extensions.Logging.ILogger,IdsLib.IdsSchema.IdsXmlNode,System.String[],``0@,IdsLib.Audit.Status@)">
+            <summary>
+            
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="logger"></param>
+            <param name="startingNode"></param>
+            <param name="typeNames">array o</param>
+            <param name="node"></param>
+            <param name="status">provide status error if return is unsecceessful</param>
+        </member>
+        <member name="M:IdsLib.IdsSchema.StringListMatcher.HasSingleMatch(System.Collections.Generic.IEnumerable{System.String},System.Boolean,Microsoft.Extensions.Logging.ILogger,System.String@,System.String,IdsLib.IfcSchema.IfcSchemaVersions)">
+            <summary>
+            triggers a log error if there's anything but a single match
+            </summary>
+        </member>
+        <member name="M:IdsLib.IdsSchema.XsNodes.XsPattern.EnsureRegex(System.String@,System.Boolean)">
+            <returns>true if ok, false if error</returns>
+        </member>
+        <member name="T:IdsLib.IdsSchema.XsNodes.XsTypes">
+            <summary>
+            Utility class for XSD type management
+            </summary>
+        </member>
+        <member name="M:IdsLib.IdsSchema.XsNodes.XsTypes.IsValid(System.String,IdsLib.IdsSchema.XsNodes.XsTypes.BaseTypes)">
+            <summary>
+            Determines if a string value is compatible with a given type
+            </summary>
+            <param name="valueString">the string value to parse</param>
+            <param name="base">The expected base type</param>
+            <returns>TRUE if compatible, FALSE otherwise</returns>
+        </member>
+        <member name="M:IdsLib.IdsSchema.XsNodes.XsTypes.GetBaseFrom(System.String)">
+            <summary>
+            Utility function to evaluate the type enumeration from a string 
+            </summary>
+            <param name="baseAsString">the string value to parse</param>
+            <returns>the resolved enumeration result.</returns>
+        </member>
+        <member name="T:IdsLib.IdsSchema.XsNodes.XsTypes.BaseTypes">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:IdsLib.IdsSchema.XsNodes.XsTypes.BaseTypes.Invalid">
+            <summary>
+            A an attempted conversion from string was unsuccesful
+            </summary>
+        </member>
+        <member name="F:IdsLib.IdsSchema.XsNodes.XsTypes.BaseTypes.Undefined">
+            <summary>
+            The value has not been assigned yet
+            </summary>
+        </member>
+        <member name="F:IdsLib.IdsSchema.XsNodes.XsTypes.BaseTypes.XsString">
+            <summary>
+            String value
+            </summary>
+        </member>
+        <member name="F:IdsLib.IdsSchema.XsNodes.XsTypes.BaseTypes.XsBoolean">
+            <summary>
+            Boiolean value
+            </summary>
+        </member>
+        <member name="F:IdsLib.IdsSchema.XsNodes.XsTypes.BaseTypes.XsInteger">
+            <summary>
+            Integer value
+            </summary>
+        </member>
+        <member name="F:IdsLib.IdsSchema.XsNodes.XsTypes.BaseTypes.XsDouble">
+            <summary>
+            Double precision floating point value
+            </summary>
+        </member>
+        <member name="F:IdsLib.IdsSchema.XsNodes.XsTypes.BaseTypes.XsFloat">
+            <summary>
+            Floating point value 
+            </summary>
+        </member>
+        <member name="F:IdsLib.IdsSchema.XsNodes.XsTypes.BaseTypes.XsDecimal">
+            <summary>
+            Decimal precision value
+            </summary>
+        </member>
+        <member name="F:IdsLib.IdsSchema.XsNodes.XsTypes.BaseTypes.XsDuration">
+            <summary>
+            Time duration value
+            </summary>
+        </member>
+        <member name="F:IdsLib.IdsSchema.XsNodes.XsTypes.BaseTypes.XsDateTime">
+            <summary>
+            Date and time value (with optional time zone offset)
+            </summary>
+        </member>
+        <member name="F:IdsLib.IdsSchema.XsNodes.XsTypes.BaseTypes.XsDate">
+            <summary>
+            Date only value (with optional time zone offset)
+            </summary>
+        </member>
+        <member name="F:IdsLib.IdsSchema.XsNodes.XsTypes.BaseTypes.XsTime">
+            <summary>
+            Time only value (with optional time zone offset)
+            </summary>
+        </member>
+        <member name="F:IdsLib.IdsSchema.XsNodes.XsTypes.BaseTypes.XsAnyUri">
+            <summary>
+            URI value
+            </summary>
+        </member>
+        <member name="T:IdsLib.IfcSchema.ClassType">
+            <summary>
+            Information on the potential use of the class
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.ClassType.Abstract">
+            <summary>
+            Will not have concrete instances
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.ClassType.Concrete">
+            <summary>
+            Can have a concrete instantiation
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.ClassType.Enumeration">
+            <summary>
+            Is an enumeration or closed values
+            </summary>
+        </member>
+        <member name="T:IdsLib.IfcSchema.FunctionalType">
+            <summary>
+            the IFC classes we present can be classified with regards to their potential role in the IfcRelDefinesByType relation.
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.FunctionalType.Element">
+            <summary>
+            Can be found in the RelatedObjects side of the relation.
+            Does not have a specific class defined in the RelatingType side of the relation.
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.FunctionalType.ElementWithTypes">
+            <summary>
+            Can be found in the RelatedObjects side of the relation.
+            Does have a specific class defined in the RelatingType side of the relation.
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.FunctionalType.TypeOfElement">
+            <summary>
+            Can be found in the RelatingType side of the relation.
+            </summary>
+        </member>
+        <member name="T:IdsLib.IfcSchema.ClassInfo">
+            <summary>
+            Complext metedata container for properties of IFC classes
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.ClassInfo.Name">
+            <summary>
+            Class Name as string (stored as camelcase, convert to upper for valid IDS class names)
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.ClassInfo.ParentName">
+            <summary>
+            Parent name as string
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.ClassInfo.Type">
+            <summary>
+            Metadata about the class (concrete, abstract or enum).
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.ClassInfo.Parent">
+            <summary>
+            Resolved parent Classinfo
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.ClassInfo.FunctionalType">
+            <summary>
+            Is the class 
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.ClassInfo.PredefinedTypeValues">
+            <summary>
+            List of predefined type strings from the schema
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.ClassInfo.DirectAttributes">
+            <summary>
+            List of attribute names for the type
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.ClassInfo.Is(System.String)">
+            <summary>
+            Similar to the c# Is clause
+            </summary>
+            <param name="className">the class we are comparing against</param>
+        </member>
+        <member name="P:IdsLib.IfcSchema.ClassInfo.NameSpace">
+            <summary>
+            The namespace of the class
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.ClassInfo.SubClasses">
+            <summary>
+            List of all subclasses.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.ClassInfo.MatchingConcreteClasses">
+            <summary>
+            All matching concrete classes, including self and entire subclass tree
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.ClassInfo.#ctor(System.String,System.String,IdsLib.IfcSchema.ClassType,System.Collections.Generic.IEnumerable{System.String},System.String,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Public constructor
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.ClassInfo.RelationTypeClasses">
+            <summary>
+            What are the Type Classes related to the current (e.g. IfcWall to IfcWallType).
+            </summary>
+        </member>
+        <member name="T:IdsLib.IfcSchema.DimensionType">
+            <summary>
+            One of the core SI units of measure
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.DimensionType.Length">
+            <summary>
+            Length
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.DimensionType.Mass">
+            <summary>
+            Mass
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.DimensionType.Time">
+            <summary>
+            Time
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.DimensionType.ElectricCurrent">
+            <summary>
+            Electric Current
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.DimensionType.Temperature">
+            <summary>
+            Temperature
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.DimensionType.AmountOfSubstance">
+            <summary>
+            Amount Of Substance
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.DimensionType.LuminousIntensity">
+            <summary>
+            Luminous Intensity
+            </summary>
+        </member>
+        <member name="T:IdsLib.IfcSchema.DimensionalExponents">
+            <summary>
+            Supports conversion of measures from different forms of unit expression
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.DimensionalExponents.Length">
+            <summary>
+            Dimensional exponent for the Length core SI unit of measure
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.DimensionalExponents.Mass">
+            <summary>
+            Dimensional exponent for the Mass core SI unit of measure
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.DimensionalExponents.Time">
+            <summary>
+            Dimensional exponent for the Time core SI unit of measure
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.DimensionalExponents.ElectricCurrent">
+            <summary>
+            Dimensional exponent for the ElectricCurrent core SI unit of measure
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.DimensionalExponents.Temperature">
+            <summary>
+            Dimensional exponent for the Temperature core SI unit of measure
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.DimensionalExponents.AmountOfSubstance">
+            <summary>
+            Dimensional exponent for the AmountOfSubstance core SI unit of measure
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.DimensionalExponents.LuminousIntensity">
+            <summary>
+            Dimensional exponent for the LuminousIntensity core SI unit of measure
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.DimensionalExponents.GetUnit(IdsLib.IfcSchema.DimensionType)">
+            <summary>
+            Provides the DimensionalExponents of the base SI units.
+            </summary>
+            <param name="tp">Enum expression of the unit being sought</param>
+            <returns>the relevant exponent sequence.</returns>
+            <exception cref="T:System.NotImplementedException">should never occurr</exception>
+        </member>
+        <member name="M:IdsLib.IfcSchema.DimensionalExponents.GetExponent(IdsLib.IfcSchema.DimensionType)">
+            <summary>
+            Finds the exponent of one of the base SI units.
+            </summary>
+            <param name="tp">The relevant unit to search for</param>
+            <returns>an integer</returns>
+            <exception cref="T:System.NotImplementedException">Should never occurr</exception>
+        </member>
+        <member name="M:IdsLib.IfcSchema.DimensionalExponents.ToString">
+            <inheritdoc />
+        </member>
+        <member name="M:IdsLib.IfcSchema.DimensionalExponents.Elevated(IdsLib.IfcSchema.DimensionalExponents,System.Int32)">
+            <summary>
+            Generates a new <see cref="T:IdsLib.IfcSchema.DimensionalExponents"/> instance, elevating a starting one to the <paramref name="exponent"/> power.
+            </summary>
+            <param name="val">The base unit</param>
+            <param name="exponent">the power to raise the base unit to</param>
+            <returns>A new <see cref="T:IdsLib.IfcSchema.DimensionalExponents"/> instance</returns>
+        </member>
+        <member name="M:IdsLib.IfcSchema.DimensionalExponents.Elevate(System.Int32)">
+            <summary>
+            elevates  the current instance to the <paramref name="exponent"/> power.
+            </summary>
+            <param name="exponent">the power to raise the current instance to</param>
+        </member>
+        <member name="M:IdsLib.IfcSchema.DimensionalExponents.Multiply(IdsLib.IfcSchema.DimensionalExponents)">
+            <summary>
+            Generates a new <see cref="T:IdsLib.IfcSchema.DimensionalExponents"/> instance, resulting from the multiplication of the current instance with the <paramref name="other"/>.
+            </summary>
+            <returns>A new instance, not altering the current.</returns>
+        </member>
+        <member name="M:IdsLib.IfcSchema.DimensionalExponents.FromString(System.String)">
+            <summary>
+            New dimensional exponent from a string.
+            </summary>
+            <param name="str">
+            the string as a list of integers, separated by commas, optionally surrounded by round brackets
+            order of integers in the string is:
+            1) length, 2)mass, 3) time, 4) electricCurrent, 5) temperature, 6) amountOfSsubstance, 7) luminousIntensity
+            </param>
+            <returns>Null if the string is invalid</returns>
+        </member>
+        <member name="M:IdsLib.IfcSchema.DimensionalExponents.#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Specifies exponent for all the base SI units involved; order of parameters is:
+            1) length, 2)mass, 3) time, 4) electricCurrent, 5) temperature, 6) amountOfSsubstance, 7) luminousIntensity
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.DimensionalExponents.#ctor">
+            <summary>
+            Unitless exponents, all values are 0.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.DimensionalExponents.Units">
+            <summary>
+            short form of the SI Units referenced by the exponents
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.DimensionalExponents.ToUnitSymbol">
+            <summary>
+            String expression of the combination of exponets in the SI <see cref="P:IdsLib.IfcSchema.DimensionalExponents.Units"/>.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:IdsLib.IfcSchema.DimensionalExponents.Equals(IdsLib.IfcSchema.DimensionalExponents)">
+            <inheritdoc />
+        </member>
+        <member name="M:IdsLib.IfcSchema.DimensionalExponents.Equals(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:IdsLib.IfcSchema.DimensionalExponents.GetHashCode">
+            <inheritdoc />
+        </member>
+        <member name="T:IdsLib.IfcSchema.IfcAttributeInformation">
+            <summary>
+            Metadata container for attributes of entities in IfcSchema
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.IfcAttributeInformation.IfcAttributeName">
+            <summary>
+            Name of the attribute as a string
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.IfcAttributeInformation.ValidSchemaVersions">
+            <summary>
+            Schemas in which the attribute can be found.
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.IfcAttributeInformation.#ctor(System.String,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Default constructor, ensures static nullable analysis
+            </summary>
+        </member>
+        <member name="T:IdsLib.IfcSchema.IfcClassInformation">
+            <summary>
+            Simplistic metadata container for entities of an IfcSchema
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.IfcClassInformation.PascalCaseName">
+            <summary>
+            Name of the class as a string, stored in PascalCase
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.IfcClassInformation.UpperCaseName">
+            <summary>
+            Name of the class as a string, converted to UPPERCASE
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.IfcClassInformation.ValidSchemaVersions">
+            <summary>
+            Versions of the schema that contain the class
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.IfcClassInformation.#ctor(System.String,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Default constructor, ensures static nullable analysis
+            </summary>
+        </member>
+        <member name="T:IdsLib.IfcSchema.IfcDataTypeInformation">
+            <summary>
+            Metadata container for entities containing measures of an IfcSchema.
+            Access the list from <see cref="P:IdsLib.IfcSchema.SchemaInfo.AllDataTypes"/>.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.IfcDataTypeInformation.IfcDataTypeClassName">
+            <summary>
+            Name of the entity as a string, stored in UPPERCASE
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.IfcDataTypeInformation.Measure">
+            <summary>
+            Metadata for unit of measure conversion, if relevant.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.IfcDataTypeInformation.BackingType">
+            <summary>
+            The XML type backing the datatype, if known.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.IfcDataTypeInformation.ValidSchemaVersions">
+            <summary>
+            Versions of the schema that contain the class
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.IfcDataTypeInformation.#ctor(System.String,System.Collections.Generic.IEnumerable{System.String},System.String)">
+            <summary>
+            Default constructor, ensures static nullable analysis
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.IfcDataTypeInformation.#ctor(System.String,System.Collections.Generic.IEnumerable{System.String},IdsLib.IfcSchema.IfcMeasureInformation,System.String)">
+            <summary>
+            Custom constructor for unit conversion
+            </summary>
+        </member>
+        <member name="T:IdsLib.IfcSchema.IfcMeasureInformation">
+            <summary>
+            Metadata about measure conversion behaviours.
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.IfcMeasureInformation.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            basic constructor
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.IfcMeasureInformation.Id">
+            <summary>
+            The string ID found in the XML persistence
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.IfcMeasureInformation.IfcMeasure">
+            <summary>
+            String of the Ifc type expected
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.IfcMeasureInformation.Description">
+            <summary>
+            A textual description, e.g. "Frequency"
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.IfcMeasureInformation.Unit">
+            <summary>
+            Full name of the unit, e.g. hertz
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.IfcMeasureInformation.UnitSymbol">
+            <summary>
+            Symbol used to present the unit, e.g. Hz
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.IfcMeasureInformation.DefaultDisplay">
+            <summary>
+            Preferred representation unit, e.g. 1 / s
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.IfcMeasureInformation.Exponents">
+            <summary>
+            Dimensional exponents useful for conversion to other units.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.IfcMeasureInformation.UnitTypeEnum">
+            <summary>
+            The string value of the UnitType enum of a valid matching unit
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.IfcMeasureInformation.GetUnit">
+            <summary>
+            Returns the SI preferred unit.
+            </summary>
+            <returns>empty string for measures that do not have expected measures</returns>
+        </member>
+        <member name="T:IdsLib.IfcSchema.IfcSchemaAttribute">
+            <summary>
+            Metadata attribute to define if a value of <see cref="T:IdsLib.IfcSchema.IfcSchemaVersions"/> identifies a single version of the schema
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.IfcSchemaAttribute.IsSpecificAttribute">
+            <summary>
+            Attribute decorator to define if a value of <see cref="T:IdsLib.IfcSchema.IfcSchemaVersions"/> identifies a single version of the schema
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.IfcSchemaAttribute.#ctor(System.Boolean)">
+            <summary>
+            default constructor
+            </summary>
+            <param name="isSpecific">assigns the <see cref="F:IdsLib.IfcSchema.IfcSchemaAttribute.IsSpecificAttribute"/> value</param>
+        </member>
+        <member name="T:IdsLib.IfcSchema.IfcSchemaVersions">
+            <summary>
+            Enumerations for the identification of multiple schema versions.
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.IfcSchemaVersions.IfcNoVersion">
+            <summary>
+            Matches no schema
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.IfcSchemaVersions.Ifc2x3">
+            <summary>
+            Matches includes version Ifc2x3
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.IfcSchemaVersions.Ifc4">
+            <summary>
+            Matches includes version Ifc4
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.IfcSchemaVersions.Ifc4x3">
+            <summary>
+            Matches includes version Ifc4x3
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.IfcSchemaVersions.IfcAllVersions">
+            <summary>
+            Matches includes all valid Ifc versions
+            </summary>
+        </member>
+        <member name="T:IdsLib.IfcSchema.IfcSchemaVersionsExtensions">
+            <summary>
+            Provides utility methods for the <see cref="T:IdsLib.IfcSchema.IfcSchemaVersions"/> enum.
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.IfcSchemaVersionsExtensions.IfcSchema2x3String">
+            <summary>
+            Canonical string version of the schema version
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.IfcSchemaVersionsExtensions.IfcSchema4String">
+            <summary>
+            Canonical string version of the schema version
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.IfcSchemaVersionsExtensions.IfcSchema4x3String">
+            <summary>
+            Canonical string version of the schema version
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.IfcSchemaVersionsExtensions.IfcSchema4x3StringLegacy">
+            <summary>
+            Legacy string version of the IFC4X3 schema version
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.IfcSchemaVersionsExtensions.GetSchema(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Converts a set of IFC schema name strings to the relative enum value
+            </summary>
+            <param name="schemaStrings">Enumerable strings to be evaluated</param>
+            <returns>A single enumeration value representing all the <paramref name="schemaStrings"/></returns>
+        </member>
+        <member name="M:IdsLib.IfcSchema.IfcSchemaVersionsExtensions.ParseXmlSchemasFromAttribute(System.String)">
+            <summary>
+            Converts a set of IFC schema strings, concatenated in a single space separated string (useful for XML attribute reading).
+            </summary>
+            <param name="spaceSeparatedSchemaStrings">A single string possibly containing multiple space separated values to be evaluated</param>
+            <returns>A single enumeration value representing all the <paramref name="spaceSeparatedSchemaStrings"/></returns>
+        </member>
+        <member name="M:IdsLib.IfcSchema.IfcSchemaVersionsExtensions.EncodeAsXmlSchemasAttribute(IdsLib.IfcSchema.IfcSchemaVersions)">
+            <summary>
+            Encodes a schemas enum to a string formatted as an enumerable XML attribute.
+            </summary>
+            <param name="versions">The versions enum to convert to XML attribute encoding</param>
+            <returns>the encoded string</returns>
+        </member>
+        <member name="M:IdsLib.IfcSchema.IfcSchemaVersionsExtensions.TryGetSchemaInformation(IdsLib.IfcSchema.IfcSchemaVersions,System.Collections.Generic.IEnumerable{IdsLib.IfcSchema.SchemaInfo}@)">
+            <summary>
+            Makes it easy to use the <see cref="M:IdsLib.IfcSchema.SchemaInfo.TryGetSchemaInformation(IdsLib.IfcSchema.IfcSchemaVersions,System.Collections.Generic.IEnumerable{IdsLib.IfcSchema.SchemaInfo}@)"/> directly from a schema enum.
+            </summary>
+            <param name="schemas">the enum to evaluate</param>
+            <param name="schemaInfo">the identified schema infos</param>
+            <returns>true if the values are matched</returns>
+        </member>
+        <member name="M:IdsLib.IfcSchema.IfcSchemaVersionsExtensions.IsSingleSchema(IdsLib.IfcSchema.IfcSchemaVersions)">
+            <summary>
+            Utility extension to help identify if the flag enum <see cref="T:IdsLib.IfcSchema.IfcSchemaVersions"/> represents a single schema value.
+            </summary>
+            <param name="schemaEnum">the enum to evaluate</param>
+            <returns>true if the enum represents a single version of the schema, false otherwise</returns>
+        </member>
+        <member name="M:IdsLib.IfcSchema.EnumHelper.GetAttributeOfType``1(System.Enum)">
+            <summary>
+            Gets an attribute on an enum field value
+            </summary>
+            <typeparam name="T">The type of the attribute you want to retrieve</typeparam>
+            <param name="enumVal">The enum value</param>
+            <returns>The attribute of type T that exists on the enum value</returns>
+            <example><![CDATA[string desc = myEnumVariable.GetAttributeOfType<DescriptionAttribute>().Description;]]></example>
+        </member>
+        <member name="T:IdsLib.IfcSchema.PartOfRelationInformation">
+            <summary>
+            Metadata container for relations that are primarily one-to-many between IFC entities
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.PartOfRelationInformation.RelationIfcName">
+            <summary>
+            Name of the IFC entity for the relation
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.PartOfRelationInformation.OwnerIfcType">
+            <summary>
+            Name of the IFC entity on the owner-side of the one-to-many relation
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.PartOfRelationInformation.PartIfcType">
+            <summary>
+            Name of the IFC entity on the part-side of the one-to-many relation
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.PartOfRelationInformation.#ctor(System.String,System.String,System.String)">
+            <summary>
+            Default constructor, ensures static nullable analysis
+            </summary>
+        </member>
+        <member name="T:IdsLib.IfcSchema.IPropertyTypeInfo">
+            <summary>
+            Generalised metadata on IFC properties
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.IPropertyTypeInfo.Name">
+            <summary>
+            Property name
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.IPropertyTypeInfo.Definition">
+            <summary>
+            Property descriptive definition.
+            </summary>
+        </member>
+        <member name="T:IdsLib.IfcSchema.IPropertyTypeInfoExtensions">
+            <summary>
+            Static class to contain extension method helpers for <see cref="T:IdsLib.IfcSchema.IPropertyTypeInfo"/>.
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.IPropertyTypeInfoExtensions.HasDataType(IdsLib.IfcSchema.IPropertyTypeInfo,System.String@)">
+            <summary>
+            Extension method to determine if the property constrains a specific data type in the IFC schema
+            </summary>
+            <param name="property">The property to be evaluated</param>
+            <param name="dataType">a nullable string if there's no constraint or the string name of the IFC class constraint</param>
+            <returns>true if a type constraint is enforced</returns>
+        </member>
+        <member name="T:IdsLib.IfcSchema.NamedPropertyType">
+            <summary>
+            Schema metadata for properties with name
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.NamedPropertyType.Name">
+            <inheritdoc />
+        </member>
+        <member name="P:IdsLib.IfcSchema.NamedPropertyType.Definition">
+            <inheritdoc />
+        </member>
+        <member name="M:IdsLib.IfcSchema.NamedPropertyType.#ctor(System.String)">
+            <summary>
+            Minimal public constructor
+            </summary>
+        </member>
+        <member name="T:IdsLib.IfcSchema.EnumerationPropertyType">
+            <summary>
+            Schema metadata for enumeration properties
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.EnumerationPropertyType.EnumerationValues">
+            <summary>
+            Possible enumeration values
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.EnumerationPropertyType.#ctor(System.String,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Minimal public constructor
+            </summary>
+        </member>
+        <member name="T:IdsLib.IfcSchema.SingleValuePropertyType">
+            <summary>
+            Schema metadata for single value properties
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.SingleValuePropertyType.#ctor(System.String,System.String)">
+            <summary>
+            minimal constructor
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.SingleValuePropertyType.DataType">
+            <summary>
+            The base IFC datatype of the property in the schema
+            </summary>
+        </member>
+        <member name="T:IdsLib.IfcSchema.PropertySetInfo">
+            <summary>
+            Information about standard property sets defined from bS
+            </summary>
+            <summary>
+            For reference see IdsLib.codegen.IfcSchema_PropertiesGenerator
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.PropertySetInfo.Name">
+            <summary>
+            The stanard name of the IfcPropertySet being described.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.PropertySetInfo.PropertyNames">
+            <summary>
+            string names of the properties defined for the IfcPropertySet being described.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.PropertySetInfo.ApplicableClasses">
+            <summary>
+            Valid schema classes that may be attached to the property set.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.PropertySetInfo.Properties">
+            <summary>
+            The properties defined for the set.
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.PropertySetInfo.GetProperty(System.String)">
+            <summary>
+            Returns one of the defined properties in the set by name, if found
+            </summary>
+            <param name="name">the expected name, case sensitive</param>
+            <returns>null if not found, otherwise information about the property</returns>
+        </member>
+        <member name="M:IdsLib.IfcSchema.PropertySetInfo.#ctor(System.String,System.Collections.Generic.IEnumerable{IdsLib.IfcSchema.IPropertyTypeInfo},System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            basic constructor
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.PropertySetInfo.SchemaIfc4">
+            <summary>
+            static method to get the known metadata for the IFC4 schema
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.PropertySetInfo.SchemaIfc4x3">
+            <summary>
+            static method to get the known metadata for the IFC4 schema
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.PropertySetInfo.Get(IdsLib.IfcSchema.IfcSchemaVersions,System.String,System.String)">
+            <summary>
+            Resolve a property from its name within a set, given an schema.
+            Both property set name and property name are case sensitive matches.
+            </summary>
+            <returns>Property metadata if exact match or null.</returns>
+        </member>
+        <member name="M:IdsLib.IfcSchema.PropertySetInfo.GetSchema(IdsLib.IfcSchema.IfcSchemaVersions)">
+            <summary>
+            Schema metadata from the enum
+            </summary>
+            <returns>null if the schema has no metadata in the current implementation</returns>
+        </member>
+        <member name="P:IdsLib.IfcSchema.PropertySetInfo.SchemaIfc2x3">
+            <summary>
+            static method to get the known metadata for the IFC2x3 schema
+            </summary>
+        </member>
+        <member name="T:IdsLib.IfcSchema.SchemaInfo">
+            <summary>
+            Provides static methods to get the collection of classes in the published schemas.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.SchemaInfo.AllClasses">
+            <summary>
+            This is obsolete since the name was misleading, use <see cref="P:IdsLib.IfcSchema.SchemaInfo.AllConcreteClasses"/> instead.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.SchemaInfo.AllConcreteClasses">
+            <summary>
+            The names of all concrete classes across known IFC schemas.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.SchemaInfo.AllAttributes">
+            <summary>
+            The names of all attributes across all schemas.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.SchemaInfo.Version">
+            <summary>
+            The version of the schema represented in the info
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.SchemaInfo.PropertySets">
+            <summary>
+            Provides access to the property sets of the schema
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.SchemaInfo.#ctor(IdsLib.IfcSchema.IfcSchemaVersions)">
+            <summary>
+            Provides metadata on IFC schemas, to support the correct compilation of the XIDS
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.SchemaInfo.linked">
+            <summary>
+            Ensures that the information up to date.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.SchemaInfo.AttributesToAllClasses">
+            <summary>
+            from the attribute name to the names of the classes that have the attribute.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.SchemaInfo.AttributesToTopClasses">
+            <summary>
+            from the attribute name to the names of the minimum set of classes that declare the attribute (no subclasses).
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.SchemaInfo.AttributesToValueTypes">
+            <summary>
+            from the attribute name to the names of the minimum set of classes that declare the attribute (no subclasses).
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.SchemaInfo.Item(System.String)">
+            <summary>
+            Get the classinfo by name string.
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.SchemaInfo.TryParseIfcMeasure(System.String,IdsLib.IfcSchema.IfcDataTypeInformation@,System.Boolean)">
+            <summary>
+            Obsolete function, please use the direct replacement TryParseIfcDataType instead, with the same parameter structure
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:IdsLib.IfcSchema.SchemaInfo.TryParseIfcDataType(System.String,IdsLib.IfcSchema.IfcDataTypeInformation@,System.Boolean)">
+            <summary>
+            Attempts to convert a string value to an instance of the IfcMeasureInformation
+            </summary>
+            <param name="value">the dataType string to parse</param>
+            <param name="found"></param>
+            <param name="strict">if true only accepts capitalized data, otherwise tolerates case inconsistencies</param>
+            <returns>true if a match is found</returns>
+        </member>
+        <member name="P:IdsLib.IfcSchema.SchemaInfo.AllMeasureInformation">
+            <summary>
+            A selection of all the measures available in <see cref="P:IdsLib.IfcSchema.SchemaInfo.AllDataTypes"/>.
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.SchemaInfo.Add(IdsLib.IfcSchema.ClassInfo)">
+            <summary>
+            Add a new classInfo to the collection
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.SchemaInfo.LinkTree">
+            <summary>
+            Ensure relationships between classes are correct.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.SchemaInfo.SchemaIfc4">
+            <summary>
+            Static property for the Ifc4 schema
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.SchemaInfo.SchemaIfc4x3">
+            <summary>
+            Static property for the Ifc4 schema
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.SchemaInfo.GetAttributeClasses(System.String,System.Boolean)">
+            <summary>
+            Returns names of the classes that have an attribute.
+            /// See <seealso cref="M:IdsLib.IfcSchema.SchemaInfo.GetAttributeRelations(System.String)"/> for similar function with different return type.
+            </summary>
+            <param name="attributeName">The attribute being sought</param>
+            <param name="onlyTopClasses">reduces the return to the minimum set of top level classes that have the attribute (no subclasses)</param>
+            <returns>enumeration of class names, possibly empty, if not found</returns>
+        </member>
+        <member name="M:IdsLib.IfcSchema.SchemaInfo.GetAttributeRelations(System.String)">
+            <summary>
+            Provides information of classes that have an attribute and the form of the relation to it.
+            See <seealso cref="M:IdsLib.IfcSchema.SchemaInfo.GetAttributeClasses(System.String,System.Boolean)"/> for similar function with different return type.
+            </summary>
+            <param name="attributeName">Name of the attribute in question</param>
+            <returns></returns>
+        </member>
+        <member name="T:IdsLib.IfcSchema.SchemaInfo.ClassAttributeMode">
+            <summary>
+            Relation that allows to connect an available attribute to an entity
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.SchemaInfo.ClassAttributeMode.ViaElement">
+            <summary>
+            The attribute is directly defined in an IfcClass
+            </summary>
+        </member>
+        <member name="F:IdsLib.IfcSchema.SchemaInfo.ClassAttributeMode.ViaRelationType">
+            <summary>
+            The attribute is defined in the type that can be related to an Ifc Class
+            </summary>
+        </member>
+        <member name="T:IdsLib.IfcSchema.SchemaInfo.ClassRelationInfo">
+            <summary>
+            A structure contianing information about the ways in which an attribute is related to a class
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.SchemaInfo.ClassRelationInfo.ClassName">
+            <summary>
+            Class name
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.SchemaInfo.ClassRelationInfo.Connection">
+            <summary>
+            Mode of connection to the Class
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.SchemaInfo.SharedClassesForAttributes(IdsLib.IfcSchema.IfcSchemaVersions,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            the set of classes that satisfy the attributes across all provided schemas
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.SchemaInfo.SchemaIfc2x3">
+            <summary>
+            Static property for the Ifc2x3 schema
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.SchemaInfo.GetAttributeNames">
+            <summary>
+            Returns all attribute names in the schema
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.SchemaInfo.GetEnumerator">
+            <summary>
+            The default enumerator for the schema returns the classes defined within
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.SchemaInfo.System#Collections#IEnumerable#GetEnumerator">
+            <summary>
+            The default enumerator for the schema returns the classes defined within
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.SchemaInfo.GetSchemas(IdsLib.IfcSchema.IfcSchemaVersions)">
+            <summary>
+            Returns the schema metadata information for the required versions.
+            </summary>
+            <param name="schemaVersions">required</param>
+            <returns></returns>
+        </member>
+        <member name="M:IdsLib.IfcSchema.SchemaInfo.GetConcreteClassesFrom(System.String,IdsLib.IfcSchema.IfcSchemaVersions)">
+            <summary>
+            Returns a list of the concrete class names that implement a given top class.
+            When multiple schema flags are passed the list is the non-repeating union of the values of each schema
+            </summary>
+            <returns>A non null enumerable that might be empty if the topClass is not found or no schema is provided</returns>
+        </member>
+        <member name="F:IdsLib.IfcSchema.SchemaInfo.inheritanceListCache">
+            <summary>
+            the inner dictionary maps a type built as [TYPE]_[COUNT] to the topClass
+            </summary>
+        </member>
+        <member name="M:IdsLib.IfcSchema.SchemaInfo.TrySearchTopClass(System.Collections.Generic.IEnumerable{System.String},IdsLib.IfcSchema.IfcSchemaVersions,System.String@)">
+            <summary>
+            Attempts to identify a single top class inheritance from a list of class names
+            </summary>
+            <param name="concreteClassNames">the enumeration of class names must be uppercase</param>
+            <param name="schemas">the schemas in which the concrete classes are found</param>
+            <param name="topClass">The resulting name of the schema (PascalCase)</param>
+            <returns>true if a single top class can be found, false otherwise</returns>
+        </member>
+        <member name="M:IdsLib.IfcSchema.SchemaInfo.GetAttributesTypes(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Returns a distinct enumerable of the backing types of the required attributes, given a set of attribut names
+            </summary>
+            <param name="attributeNames">The names of the attributes to evaluate</param>
+            <returns>string names of the types found in the evaluation of the attributes</returns>
+        </member>
+        <member name="M:IdsLib.IfcSchema.SchemaInfo.GetAttributesXmlTypes(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Returns a distinct enumerable of the backing types of the required attributes, given a set of attribut names
+            </summary>
+            <param name="attributeNames">The names of the attributes to evaluate</param>
+            <returns>string names of the types found in the evaluation of the attributes</returns>
+        </member>
+        <member name="P:IdsLib.IfcSchema.SchemaInfo.AllDataTypes">
+            <summary>
+            The names of dataType classes across all schemas.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.SchemaInfo.AllPartOfRelations">
+            <summary>
+            The names of classes across all schemas.
+            </summary>
+        </member>
+        <member name="P:IdsLib.IfcSchema.TypeFilters.IfcInheritanceTypeConstraint.ConcreteTypes">
+            <inheritdoc/>
+        </member>
+        <member name="P:IdsLib.IfcSchema.TypeFilters.IfcInheritanceTypeConstraint.IsEmpty">
+            <inheritdoc/>
+        </member>
+        <member name="M:IdsLib.IfcSchema.TypeFilters.IfcInheritanceTypeConstraint.Intersect(IdsLib.IfcSchema.TypeFilters.IIfcTypeConstraint)">
+            <inheritdoc/>
+        </member>
+        <member name="M:IdsLib.IfcSchema.TypeFilters.IfcInheritanceTypeConstraint.Union(IdsLib.IfcSchema.TypeFilters.IIfcTypeConstraint)">
+            <inheritdoc/>
+        </member>
+        <member name="P:IdsLib.IfcSchema.TypeFilters.IIfcTypeConstraint.ConcreteTypes">
+            <summary>
+            Concrete types as upper invariant strings
+            </summary>
+        </member>
+        <member name="T:IdsLib.LibraryInformation">
+            <summary>
+            General information on the assembly without reflection.
+            
+            This is useful for environments that do not allow to load information from the DLL dynamically (e.g. Blazor).
+            </summary>
+        </member>
+        <member name="P:IdsLib.LibraryInformation.Commit">
+            <summary>
+            Static field with the short commit hash at compilation time
+            </summary>
+        </member>
+        <member name="P:IdsLib.LibraryInformation.Sha">
+            <summary>
+            Static field with the full SHA hash at compilation time
+            </summary>
+        </member>
+        <member name="P:IdsLib.LibraryInformation.Isdirty">
+            <summary>
+            Static field with informing of possible dirty repository on compilation. When compiled remotely it does not necessarily mean that the code differs from the commit.
+            </summary>
+        </member>
+        <member name="P:IdsLib.LibraryInformation.CommitDate">
+            <summary>
+            Static field with the full datetime string of the commit.
+            </summary>
+        </member>
+        <member name="P:IdsLib.LibraryInformation.AssemblyVersion">
+            <summary>
+            Static field with hardcoded DLL version number. 
+            </summary>
+        </member>
+        <member name="T:IdsLib.Messages.IdsErrorMessages">
+            <summary>
+            todo: create resource for internationalization
+            todo: add configuration to return :p style location <see cref="M:IdsLib.IdsSchema.IdsNodes.NodeIdentification.ToString(System.String,System.IFormatProvider)"/>, that defines the :p style
+                  e.g. ("Inconsistent clauses: {message} on {location:p}.", scenarioMessage, context.GetNodeIdentification());
+            </summary>
+            Reminder: when adding an error code here also add to the ErrorCodes.md in the lib.
+        </member>
+        <member name="M:IdsLib.Messages.IdsErrorMessages.Report302InvalidXsFacet(Microsoft.Extensions.Logging.ILogger,IdsLib.IdsSchema.IdsXmlNode,System.String)">
+            <summary>
+            Report an invalid XML structure within a facet
+            </summary>
+            <param name="logger">optional logging destination</param>
+            <param name="context">Provides indication of the position of the error in the file</param>
+            <param name="alternative">if an alternative solution is preferred, it can be suggested here with no punctuation at the end</param>
+            <returns>The error status associated with this problem</returns>
+        </member>
+        <member name="T:IdsLib.SchemaProviders.FixedVersionSchemaProvider">
+            <summary>
+            A schema provider based on a specific recognised version
+            </summary>
+        </member>
+        <member name="M:IdsLib.SchemaProviders.FixedVersionSchemaProvider.#ctor(IdsLib.IdsSchema.IdsNodes.IdsVersion)">
+            <summary>
+            Public constructor
+            </summary>
+            <param name="vrs">The fixed schema version</param>
+        </member>
+        <member name="M:IdsLib.SchemaProviders.FixedVersionSchemaProvider.GetSchemas(System.IO.Stream,Microsoft.Extensions.Logging.ILogger,System.Collections.Generic.IEnumerable{System.Xml.Schema.XmlSchema}@)">
+            <summary>
+            standard Implementation of the resolver.
+            </summary>
+        </member>
+        <member name="T:IdsLib.SchemaProviders.SchemaProvider">
+            <summary>
+            Abstract class to provide methods to arbitrarily resolve xsd schemas
+            </summary>
+        </member>
+        <member name="M:IdsLib.SchemaProviders.SchemaProvider.GetResourceSchemasByVersion(IdsLib.IdsSchema.IdsNodes.IdsVersion,Microsoft.Extensions.Logging.ILogger,System.Collections.Generic.IEnumerable{System.Xml.Schema.XmlSchema}@)">
+            <summary>
+            By version
+            </summary>
+        </member>
+        <member name="M:IdsLib.SchemaProviders.SchemaProvider.GetResourceSchemasFromImports(Microsoft.Extensions.Logging.ILogger,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            TODO
+            </summary>
+            <param name="logger"></param>
+            <param name="imports"></param>
+            <returns></returns>
+        </member>
+        <member name="M:IdsLib.SchemaProviders.SchemaProvider.GetSchema(System.String)">
+            <summary>
+            Resolves the actual schema to load.
+            </summary>
+        </member>
+        <member name="T:IdsLib.AuditProcessOptions">
+            <summary>
+            Configuration parameters required within the inner loop of the audit.
+            </summary>
+        </member>
+        <member name="P:IdsLib.AuditProcessOptions.SchemaProvider">
+            <summary>
+            Defines the specific schemas to be loaded for the validation.
+            </summary>
+        </member>
+        <member name="P:IdsLib.AuditProcessOptions.OmitIdsSchemaAudit">
+            <summary>
+            If set to true skips the audit of the structural aspects of the IDS.
+            </summary>
+        </member>
+        <member name="P:IdsLib.AuditProcessOptions.OmitIdsContentAudit">
+            <summary>
+            If set to true skips the audit of the semantic aspects of the IDS.
+            </summary>
+        </member>
+        <member name="P:IdsLib.AuditProcessOptions.XmlWarningAction">
+            <summary>
+            The action taken when an IDS file contains warnings about its structure defined by XSD Schema
+            </summary>
+        </member>
+        <member name="T:IdsLib.AuditProcessOptions.XmlWarningBehaviour">
+            <summary>
+            Options for the reporting action taken when encountering Xsd warning in IDS files
+            </summary>
+        </member>
+        <member name="F:IdsLib.AuditProcessOptions.XmlWarningBehaviour.Ignore">
+            <summary>
+            No information or error is triggered, the warning is ignored. Report a status of <see cref="F:IdsLib.Audit.Status.Ok"/> and no information log.
+            </summary>
+        </member>
+        <member name="F:IdsLib.AuditProcessOptions.XmlWarningBehaviour.ReportAsInformation">
+            <summary>
+            Report a status of <see cref="F:IdsLib.Audit.Status.Ok"/>, but issue information to the logger.
+            </summary>
+        </member>
+        <member name="F:IdsLib.AuditProcessOptions.XmlWarningBehaviour.ReportAsWarning">
+            <summary>
+            Report a status of <see cref="F:IdsLib.Audit.Status.IdsStructureWarning"/>.
+            </summary>
+        </member>
+        <member name="F:IdsLib.AuditProcessOptions.XmlWarningBehaviour.ReportAsError">
+            <summary>
+            Report a status of <see cref="F:IdsLib.Audit.Status.IdsStructureError"/>.
+            </summary>
+        </member>
+        <member name="T:IdsLib.SingleAuditOptions">
+            <summary>
+            Configuration parameters needed to setup the audit of a single IDS.
+            The <see cref="P:IdsLib.SingleAuditOptions.IdsVersion"/> property is currently required to avoid the need to seek the stream, 
+            then resume the audit once the version is detected from the content.
+            
+            Future versions will attempt to relax this requirement.
+            
+            Ensure that the properties of the base class <see cref="T:IdsLib.AuditProcessOptions"/> are also populated.
+            </summary>
+        </member>
+        <member name="P:IdsLib.SingleAuditOptions.IdsVersion">
+            <summary>
+            Defines what version of the schema we are auditing against.
+            </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.IsDirty">
+            <summary>
+            Gets whether the current repository is dirty.
+            </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.IsDirtyString">
+            <summary>
+            => @"false"
+            </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.RepositoryUrl">
+            <summary>
+            => @"https://github.com/buildingSMART/IDS-Audit-tool.git"
+            </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.Branch">
+            <summary>
+            => @"main"
+            </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.Commit">
+            <summary>
+            => @"57353ec"
+            </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.Sha">
+            <summary>
+            => @"57353ec223b53a30d64bc23d401c1f5eb7cf3291"
+            </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.CommitDate">
+            <summary>
+            => @"2024-09-18T20:12:55+02:00"
+            </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.Commits">
+            <summary>
+            => @"114"
+            </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.Tag">
+            <summary>
+            => @""
+            </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.BaseTag">
+            <summary>
+            => @""
+            </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.BaseVersion.Major">
+            <summary>
+            => @"0"
+            </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.BaseVersion.Minor">
+            <summary>
+            => @"0"
+            </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.BaseVersion.Patch">
+            <summary>
+            => @"0"
+            </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.Major">
+            <summary>
+            => @"0"
+            </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.Minor">
+            <summary>
+            => @"0"
+            </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.Patch">
+            <summary>
+            => @"114"
+            </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.Label">
+            <summary>
+            => @""
+            </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.DashLabel">
+            <summary>
+            => @""
+            </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.Source">
+            <summary>
+            => @"Default"
+            </summary>
+        </member>
+    </members>
+</doc>

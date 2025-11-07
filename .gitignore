@@ -205,6 +205,3 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
-
-# IDS-Audit-tool binaries (downloaded via setup script)
-tools/ids-audit-tool/bin/
